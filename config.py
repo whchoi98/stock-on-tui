@@ -1,22 +1,28 @@
+"""
+애플리케이션 설정 파일 - 주식 심볼, 지수, 경제 지표, 뉴스 피드 등 전역 설정 정의
+Application configuration - defines stock symbols, indices, economic indicators, news feeds, and global settings.
+"""
 from __future__ import annotations
 
+# 주식 데이터 갱신 주기 (초) / Stock data refresh interval (seconds)
 REFRESH_INTERVAL = 45  # seconds
+# 뉴스 데이터 갱신 주기 (초) / News data refresh interval (seconds)
 NEWS_REFRESH_INTERVAL = 120  # seconds
 
-# US Market Indices
+# 미국 시장 주요 지수 (심볼: 이름) / US market major indices (symbol: name)
 US_INDICES = {
     "^GSPC": "S&P 500",
     "^IXIC": "NASDAQ",
     "^DJI": "DOW",
 }
 
-# KR Market Indices (yfinance symbols)
+# 한국 시장 주요 지수 (yfinance 심볼) / KR market major indices (yfinance symbols)
 KR_INDICES = {
     "^KS11": "KOSPI",
     "^KQ11": "KOSDAQ",
 }
 
-# US Major Stocks (50)
+# 미국 주요 종목 50개 티커 목록 / US major 50 stock ticker list
 US_STOCKS = [
     "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA",
     "META", "TSLA", "BRK-B", "JPM", "V",
@@ -24,13 +30,14 @@ US_STOCKS = [
     "HD", "XOM", "CVX", "LLY", "ABBV",
     "PFE", "KO", "PEP", "MRK", "COST",
     "AVGO", "AMD", "ORCL", "CRM", "NFLX",
-    # 20 additional
+    # 추가 20개 종목 / 20 additional stocks
     "ADBE", "CSCO", "ACN", "TXN", "INTC",
     "QCOM", "INTU", "AMAT", "BKNG", "ISRG",
     "MDLZ", "ADP", "REGN", "VRTX", "GILD",
     "PANW", "LRCX", "MU", "KLAC", "SNPS",
 ]
 
+# 미국 종목 티커-회사명 매핑 / US stock ticker-to-company-name mapping
 US_STOCK_NAMES = {
     "AAPL": "Apple", "MSFT": "Microsoft", "GOOGL": "Alphabet",
     "AMZN": "Amazon", "NVDA": "Nvidia", "META": "Meta Platforms",
@@ -51,6 +58,7 @@ US_STOCK_NAMES = {
     "KLAC": "KLA Corp", "SNPS": "Synopsys",
 }
 
+# 미국 종목 티커-섹터 매핑 / US stock ticker-to-sector mapping
 US_STOCK_SECTORS = {
     "AAPL": "Technology", "MSFT": "Technology", "GOOGL": "Technology",
     "AMZN": "Consumer", "NVDA": "Technology", "META": "Technology",
@@ -71,7 +79,7 @@ US_STOCK_SECTORS = {
     "KLAC": "Technology", "SNPS": "Technology",
 }
 
-# KR Major Stocks (50)
+# 한국 주요 종목 50개 종목코드 목록 / KR major 50 stock code list
 KR_STOCKS = [
     "005930", "000660", "373220", "005380", "000270",
     "207940", "006400", "035420", "035720", "005490",
@@ -79,13 +87,14 @@ KR_STOCKS = [
     "066570", "003670", "051910", "096770", "034730",
     "000810", "003550", "032830", "009150", "086790",
     "010130", "033780", "011200", "247540", "377300",
-    # 20 additional
+    # 추가 20개 종목 / 20 additional stocks
     "030200", "017670", "018260", "036570", "316140",
     "003490", "034020", "011170", "024110", "010950",
     "006800", "004020", "000720", "002790", "138040",
     "259960", "326030", "323410", "361610", "352820",
 ]
 
+# 한국 종목 코드-회사명 매핑 / KR stock code-to-company-name mapping
 KR_STOCK_NAMES = {
     "005930": "Samsung Electronics", "000660": "SK Hynix",
     "373220": "LG Energy Solution", "005380": "Hyundai Motor",
@@ -114,6 +123,7 @@ KR_STOCK_NAMES = {
     "361610": "SK IE Technology", "352820": "Hive",
 }
 
+# 한국 종목 코드-섹터 매핑 / KR stock code-to-sector mapping
 KR_STOCK_SECTORS = {
     "005930": "Semiconductor", "000660": "Semiconductor",
     "373220": "Battery", "005380": "Auto",
@@ -142,7 +152,7 @@ KR_STOCK_SECTORS = {
     "361610": "Battery", "352820": "Entertainment",
 }
 
-# Economic Indicators (yfinance symbols)
+# 경제 지표 (yfinance 심볼): 심볼 -> (이름, 단위) / Economic indicators (yfinance symbols): symbol -> (name, unit)
 INDICATORS = {
     "CL=F": ("WTI Oil", "$"),
     "GC=F": ("Gold", "$"),
@@ -157,8 +167,8 @@ INDICATORS = {
     "ETH-USD": ("Ethereum", "$"),
 }
 
-# Sector → Related Economic Indicators mapping
-# Maps stock sectors to relevant indicator symbols from INDICATORS
+# 섹터별 관련 경제 지표 매핑: 종목 섹터를 관련 경제 지표 심볼에 연결
+# Sector-to-related-economic-indicators mapping: maps stock sectors to relevant indicator symbols
 SECTOR_INDICATOR_MAP = {
     "Technology": ["^IXIC", "BTC-USD"],
     "Semiconductor": ["^IXIC", "BTC-USD"],
@@ -194,7 +204,7 @@ SECTOR_INDICATOR_MAP = {
     "Components": ["^IXIC", "KRW=X"],
 }
 
-# News RSS Feeds
+# 뉴스 RSS 피드 URL (미국/한국 금융 뉴스) / News RSS feed URLs (US/KR financial news)
 NEWS_FEEDS = {
     "yahoo": "https://finance.yahoo.com/news/rssindex",
     "yahoo_markets": "https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC&region=US&lang=en-US",

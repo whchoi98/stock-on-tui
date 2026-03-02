@@ -1,3 +1,7 @@
+# AWS Bedrock AI 서비스 모듈 / AWS Bedrock AI service module
+# Claude 모델을 사용하여 뉴스 기사 분석 및 종목 분석 기능을 제공합니다
+# Provides news article analysis and stock analysis using Claude model via AWS Bedrock
+
 from __future__ import annotations
 
 import json
@@ -10,10 +14,13 @@ from botocore.exceptions import BotoCoreError, NoCredentialsError
 
 logger = logging.getLogger(__name__)
 
+# Bedrock 리전 및 모델 ID 환경 변수 설정 / Bedrock region and model ID from environment variables
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "us.anthropic.claude-sonnet-4-6")
 
+# Bedrock 사용 가능 여부 캐시 (None이면 아직 확인 안 함) / Bedrock availability cache (None = not yet checked)
 _bedrock_available: Optional[bool] = None
+# Bedrock 비활성화 시 사용자에게 보여줄 안내 메시지 / Disabled message shown to user when Bedrock is unavailable
 _DISABLED_MSG = (
     "⚠ AWS Bedrock가 설정되지 않아 AI 기능을 사용할 수 없습니다.\n"
     "  - 뉴스 기사 AI 분석 / 영한 번역\n"
@@ -23,16 +30,21 @@ _DISABLED_MSG = (
 
 
 def is_bedrock_available() -> bool:
+    # AWS Bedrock 자격 증명이 설정되어 있는지 확인 / Check if AWS Bedrock credentials are configured
+    # 결과를 전역 변수에 캐시하여 반복 확인 방지 / Caches result in global variable to avoid repeated checks
     """Check if AWS Bedrock credentials are configured."""
     global _bedrock_available
+    # 이미 확인된 경우 캐시된 결과 반환 / Return cached result if already checked
     if _bedrock_available is not None:
         return _bedrock_available
     try:
+        # boto3 세션에서 자격 증명 가져오기 / Get credentials from boto3 session
         session = boto3.Session()
         creds = session.get_credentials()
         if creds is None:
             _bedrock_available = False
         else:
+            # 자격 증명을 고정하여 access_key와 secret_key 존재 여부 확인 / Freeze credentials and verify access_key and secret_key exist
             creds = creds.get_frozen_credentials()
             _bedrock_available = bool(creds.access_key and creds.secret_key)
     except Exception:
@@ -41,21 +53,32 @@ def is_bedrock_available() -> bool:
 
 
 def _get_client():
+    # Bedrock 런타임 클라이언트 생성 / Create Bedrock runtime client
+    # Bedrock 사용 불가 시 RuntimeError 발생 / Raises RuntimeError if Bedrock is unavailable
     if not is_bedrock_available():
         raise RuntimeError(_DISABLED_MSG)
+    # 설정된 리전으로 bedrock-runtime 클라이언트 반환 / Return bedrock-runtime client for configured region
     return boto3.client("bedrock-runtime", region_name=BEDROCK_REGION)
 
 
 def analyze_article(title: str, content: str, is_korean: bool) -> str:
+    # 뉴스 기사를 AI로 분석하는 함수 / Analyze a news article using AI
+    # 매개변수: title(기사 제목), content(기사 본문), is_korean(한국어 기사 여부)
+    # Parameters: title(article title), content(article body), is_korean(whether article is in Korean)
+    # 한국어 기사: 요약, 분석, 인사이트 제공 / Korean articles: summarize, analyze, provide insights
+    # 영어 기사: 한국어 번역 후 요약/분석/인사이트 제공 / English articles: translate to Korean, then summarize/analyze/provide insights
     """Use Claude Sonnet 4.6 via Bedrock to analyze a news article.
 
     For Korean articles: summarize, analyze, provide insights.
     For English articles: translate to Korean first, then summarize/analyze/provide insights.
     """
     try:
+        # Bedrock 클라이언트 가져오기 / Get Bedrock client
         client = _get_client()
 
+        # 한국어/영어에 따라 다른 프롬프트 구성 / Build different prompts depending on Korean/English
         if is_korean:
+            # 한국어 기사용 프롬프트: 요약, 분석, 투자 인사이트, 관련 종목 / Korean article prompt: summary, analysis, investment insights, related stocks
             prompt = f"""다음 경제/금융 뉴스 기사를 분석해 주세요.
 
 제목: {title}
@@ -77,6 +100,7 @@ def analyze_article(title: str, content: str, is_korean: bool) -> str:
 ## 관련 종목
 (이 뉴스와 관련된 주요 종목들)"""
         else:
+            # 영어 기사용 프롬프트: 번역 + 요약 + 분석 + 투자 인사이트 + 관련 종목 / English article prompt: translation + summary + analysis + investment insights + related stocks
             prompt = f"""다음 영문 경제/금융 뉴스 기사를 한국어로 번역하고 분석해 주세요.
 
 Title: {title}
@@ -101,6 +125,7 @@ Content:
 ## 관련 종목
 (이 뉴스와 관련된 주요 종목들 - 미국/한국)"""
 
+        # Bedrock API 요청 본문 구성 / Build Bedrock API request body
         body = json.dumps({
             "anthropic_version": "bedrock-2023-05-31",
             "max_tokens": 2048,
@@ -109,6 +134,7 @@ Content:
             ],
         })
 
+        # Bedrock API 호출하여 모델 응답 받기 / Invoke Bedrock API to get model response
         response = client.invoke_model(
             modelId=MODEL_ID,
             contentType="application/json",
@@ -116,11 +142,13 @@ Content:
             body=body,
         )
 
+        # API 응답 본문에서 텍스트 추출 / Extract text from API response body
         result = json.loads(response["body"].read())
         text = result["content"][0]["text"]
         return text
 
     except Exception as e:
+        # API 오류 로깅 및 사용자 친화적 오류 메시지 반환 / Log API error and return user-friendly error message
         logger.error(f"Bedrock API error: {e}")
         return f"(AI 분석을 불러올 수 없습니다: {e})"
 
@@ -137,17 +165,27 @@ def analyze_stock(
     market: str = "US",
     news_titles: Optional[list] = None,
 ) -> str:
+    # AI를 사용하여 종목을 분석하고 인사이트 제공 / Analyze a stock and provide insights using AI
+    # 매개변수: symbol(종목코드), name(종목명), price(현재가), change_pct(등락률),
+    #          pe_ratio(PER), week52_high/low(52주 고가/저가), sector(섹터), market(시장), news_titles(최근 뉴스 제목들)
+    # Parameters: symbol(ticker), name(stock name), price(current price), change_pct(change percentage),
+    #            pe_ratio(P/E ratio), week52_high/low(52-week high/low), sector(sector), market(market), news_titles(recent news titles)
     """Use Claude via Bedrock to analyze a stock and provide insights."""
     try:
+        # Bedrock 클라이언트 가져오기 / Get Bedrock client
         client = _get_client()
 
+        # 최근 뉴스 제목을 문자열로 변환 (최대 5개) / Convert recent news titles to string (max 5)
         news_str = ""
         if news_titles:
             news_str = "\n".join(f"- {t}" for t in news_titles[:5])
 
+        # PER 값을 문자열로 변환 (없으면 N/A) / Convert PE ratio to string (N/A if not available)
         per_str = f"{pe_ratio:.2f}" if pe_ratio else "N/A"
+        # 현재 가격의 52주 범위 내 위치를 백분율로 계산 / Calculate current price position within 52-week range as percentage
         w52_pct = ((price - week52_low) / (week52_high - week52_low) * 100) if week52_high > week52_low else 0
 
+        # 종목 분석 프롬프트 구성: 기술적 분석, 투자 포인트, 리스크 요인 / Build stock analysis prompt: technical analysis, investment points, risk factors
         prompt = f"""다음 종목을 간결하게 분석해 주세요. 각 항목을 2-3문장으로 작성하세요.
 
 종목: {symbol} ({name})
@@ -171,6 +209,7 @@ PER: {per_str}
 ## 리스크 요인
 (주의할 리스크 2-3개)"""
 
+        # Bedrock API 요청 본문 구성 (종목 분석은 max_tokens 1024) / Build Bedrock API request body (stock analysis uses max_tokens 1024)
         body = json.dumps({
             "anthropic_version": "bedrock-2023-05-31",
             "max_tokens": 1024,
@@ -179,6 +218,7 @@ PER: {per_str}
             ],
         })
 
+        # Bedrock API 호출 / Invoke Bedrock API
         response = client.invoke_model(
             modelId=MODEL_ID,
             contentType="application/json",
@@ -186,9 +226,11 @@ PER: {per_str}
             body=body,
         )
 
+        # API 응답에서 분석 텍스트 추출 / Extract analysis text from API response
         result = json.loads(response["body"].read())
         return result["content"][0]["text"]
 
     except Exception as e:
+        # 종목 분석 오류 로깅 및 사용자 친화적 오류 메시지 반환 / Log stock analysis error and return user-friendly error message
         logger.error(f"Bedrock stock analysis error: {e}")
         return f"(AI 종목 분석을 불러올 수 없습니다: {e})"

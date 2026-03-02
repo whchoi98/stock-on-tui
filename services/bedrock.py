@@ -14,7 +14,8 @@ from botocore.exceptions import BotoCoreError, NoCredentialsError
 
 logger = logging.getLogger(__name__)
 
-# Bedrock 리전 및 모델 ID 환경 변수 설정 / Bedrock region and model ID from environment variables
+# Bedrock API Key 및 리전 설정 / Bedrock API Key and region config
+BEDROCK_API_KEY = os.environ.get("BEDROCK_API_KEY", "")
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "us.anthropic.claude-sonnet-4-6")
 
@@ -22,31 +23,32 @@ MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "us.anthropic.claude-sonnet-4-6")
 _bedrock_available: Optional[bool] = None
 # Bedrock 비활성화 시 사용자에게 보여줄 안내 메시지 / Disabled message shown to user when Bedrock is unavailable
 _DISABLED_MSG = (
-    "⚠ AWS Bedrock가 설정되지 않아 AI 기능을 사용할 수 없습니다.\n"
+    "⚠ Bedrock API Key가 설정되지 않아 AI 기능을 사용할 수 없습니다.\n"
     "  - 뉴스 기사 AI 분석 / 영한 번역\n"
     "  - AI 종목 분석\n"
-    "설정 방법: install.sh 재실행 또는 aws configure 실행"
+    "설정 방법: install.sh 재실행 또는 .env에 BEDROCK_API_KEY 추가"
 )
 
 
 def is_bedrock_available() -> bool:
-    # AWS Bedrock 자격 증명이 설정되어 있는지 확인 / Check if AWS Bedrock credentials are configured
-    # 결과를 전역 변수에 캐시하여 반복 확인 방지 / Caches result in global variable to avoid repeated checks
-    """Check if AWS Bedrock credentials are configured."""
+    # Bedrock API Key 또는 AWS 자격 증명이 설정되어 있는지 확인 / Check if Bedrock API Key or AWS credentials are configured
+    """Check if Bedrock API Key or AWS credentials are configured."""
     global _bedrock_available
-    # 이미 확인된 경우 캐시된 결과 반환 / Return cached result if already checked
     if _bedrock_available is not None:
         return _bedrock_available
+    # 1) BEDROCK_API_KEY 환경변수 확인 / Check BEDROCK_API_KEY env var
+    if BEDROCK_API_KEY:
+        _bedrock_available = True
+        return True
+    # 2) AWS IAM Role / aws configure 자격 증명 확인 / Check AWS IAM Role / aws configure credentials
     try:
-        # boto3 세션에서 자격 증명 가져오기 / Get credentials from boto3 session
         session = boto3.Session()
         creds = session.get_credentials()
-        if creds is None:
-            _bedrock_available = False
-        else:
-            # 자격 증명을 고정하여 access_key와 secret_key 존재 여부 확인 / Freeze credentials and verify access_key and secret_key exist
+        if creds:
             creds = creds.get_frozen_credentials()
             _bedrock_available = bool(creds.access_key and creds.secret_key)
+        else:
+            _bedrock_available = False
     except Exception:
         _bedrock_available = False
     return _bedrock_available
@@ -54,10 +56,17 @@ def is_bedrock_available() -> bool:
 
 def _get_client():
     # Bedrock 런타임 클라이언트 생성 / Create Bedrock runtime client
-    # Bedrock 사용 불가 시 RuntimeError 발생 / Raises RuntimeError if Bedrock is unavailable
     if not is_bedrock_available():
         raise RuntimeError(_DISABLED_MSG)
-    # 설정된 리전으로 bedrock-runtime 클라이언트 반환 / Return bedrock-runtime client for configured region
+    # API Key가 있으면 해당 키로 클라이언트 생성 / Create client with API key if available
+    if BEDROCK_API_KEY:
+        return boto3.client(
+            "bedrock-runtime",
+            region_name=BEDROCK_REGION,
+            aws_access_key_id=BEDROCK_API_KEY,
+            aws_secret_access_key=BEDROCK_API_KEY,
+        )
+    # IAM Role / aws configure 자격 증명 사용 / Use IAM Role / aws configure credentials
     return boto3.client("bedrock-runtime", region_name=BEDROCK_REGION)
 
 

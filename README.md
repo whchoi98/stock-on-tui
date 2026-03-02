@@ -23,6 +23,11 @@ US/KR 시장별 상승·하락 종목수, Top 상승/하락 종목(종목명+거
 
 ![Detail](screenshots/detail.png)
 
+### AI Analysis — 뉴스 기사 AI 분석
+AWS Bedrock Claude Sonnet을 통해 뉴스 기사 요약, 시장 영향 분석, 투자 인사이트, 관련 종목을 자동 도출합니다. 영어 기사는 한국어로 번역 후 분석합니다.
+
+![AI Analysis](screenshots/ai_analysis.png)
+
 ---
 
 ## Features

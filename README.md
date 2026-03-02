@@ -6,9 +6,14 @@ Textual 기반 실시간 글로벌 주식 모니터 TUI 앱
 
 ## Screenshots
 
-| Dashboard | Detail |
-|-----------|--------|
-| ![Dashboard](dashboard.png) | ![Detail](detail.png) |
+### Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### Insight (시장 요약 + 섹터 등락)
+![Insight](screenshots/insight.png)
+
+### Detail (종목 상세)
+![Detail](screenshots/detail.png)
 
 ## Features
 
@@ -41,14 +46,17 @@ Textual 기반 실시간 글로벌 주식 모니터 TUI 앱
 
 ### Installation
 ```bash
-git clone <repo-url>
+git clone https://github.com/whchoi98/stock-on-tui.git
 cd stock-on-tui
-pip install -r requirements.txt
+chmod +x install.sh
+./install.sh
 ```
+설치 시 AWS Bedrock credentials 입력 프롬프트가 나타납니다.
+입력하지 않으면 AI 분석/영한 번역 기능 없이 실행됩니다.
 
 ### Run
 ```bash
-python3 app.py
+./run.sh
 ```
 
 ## Key Bindings

@@ -3,7 +3,10 @@ __pycache__/
 .venv/
 .env
 *.log
-*.png
 *.svg
-*.jpeg
 .claude/settings.local.json
+
+# 루트의 임시 이미지 제외, screenshots/ 디렉토리는 허용
+/*.png
+/*.jpeg
+!screenshots/

@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+*.log
+*.png
+*.svg
+*.jpeg
+.claude/settings.local.json

@@ -1,0 +1,203 @@
+from __future__ import annotations
+
+REFRESH_INTERVAL = 45  # seconds
+NEWS_REFRESH_INTERVAL = 120  # seconds
+
+# US Market Indices
+US_INDICES = {
+    "^GSPC": "S&P 500",
+    "^IXIC": "NASDAQ",
+    "^DJI": "DOW",
+}
+
+# KR Market Indices (yfinance symbols)
+KR_INDICES = {
+    "^KS11": "KOSPI",
+    "^KQ11": "KOSDAQ",
+}
+
+# US Major Stocks (50)
+US_STOCKS = [
+    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA",
+    "META", "TSLA", "BRK-B", "JPM", "V",
+    "JNJ", "UNH", "WMT", "MA", "PG",
+    "HD", "XOM", "CVX", "LLY", "ABBV",
+    "PFE", "KO", "PEP", "MRK", "COST",
+    "AVGO", "AMD", "ORCL", "CRM", "NFLX",
+    # 20 additional
+    "ADBE", "CSCO", "ACN", "TXN", "INTC",
+    "QCOM", "INTU", "AMAT", "BKNG", "ISRG",
+    "MDLZ", "ADP", "REGN", "VRTX", "GILD",
+    "PANW", "LRCX", "MU", "KLAC", "SNPS",
+]
+
+US_STOCK_NAMES = {
+    "AAPL": "Apple", "MSFT": "Microsoft", "GOOGL": "Alphabet",
+    "AMZN": "Amazon", "NVDA": "Nvidia", "META": "Meta Platforms",
+    "TSLA": "Tesla", "BRK-B": "Berkshire Hathaway", "JPM": "JPMorgan Chase",
+    "V": "Visa", "JNJ": "Johnson & Johnson", "UNH": "UnitedHealth",
+    "WMT": "Walmart", "MA": "Mastercard", "PG": "Procter & Gamble",
+    "HD": "Home Depot", "XOM": "Exxon Mobil", "CVX": "Chevron",
+    "LLY": "Eli Lilly", "ABBV": "AbbVie", "PFE": "Pfizer",
+    "KO": "Coca-Cola", "PEP": "PepsiCo", "MRK": "Merck",
+    "COST": "Costco", "AVGO": "Broadcom", "AMD": "AMD",
+    "ORCL": "Oracle", "CRM": "Salesforce", "NFLX": "Netflix",
+    "ADBE": "Adobe", "CSCO": "Cisco", "ACN": "Accenture",
+    "TXN": "Texas Instruments", "INTC": "Intel", "QCOM": "Qualcomm",
+    "INTU": "Intuit", "AMAT": "Applied Materials", "BKNG": "Booking Holdings",
+    "ISRG": "Intuitive Surgical", "MDLZ": "Mondelez", "ADP": "ADP",
+    "REGN": "Regeneron", "VRTX": "Vertex Pharma", "GILD": "Gilead Sciences",
+    "PANW": "Palo Alto Networks", "LRCX": "Lam Research", "MU": "Micron",
+    "KLAC": "KLA Corp", "SNPS": "Synopsys",
+}
+
+US_STOCK_SECTORS = {
+    "AAPL": "Technology", "MSFT": "Technology", "GOOGL": "Technology",
+    "AMZN": "Consumer", "NVDA": "Technology", "META": "Technology",
+    "TSLA": "Consumer", "BRK-B": "Financial", "JPM": "Financial",
+    "V": "Financial", "JNJ": "Healthcare", "UNH": "Healthcare",
+    "WMT": "Consumer", "MA": "Financial", "PG": "Consumer",
+    "HD": "Consumer", "XOM": "Energy", "CVX": "Energy",
+    "LLY": "Healthcare", "ABBV": "Healthcare", "PFE": "Healthcare",
+    "KO": "Consumer", "PEP": "Consumer", "MRK": "Healthcare",
+    "COST": "Consumer", "AVGO": "Technology", "AMD": "Technology",
+    "ORCL": "Technology", "CRM": "Technology", "NFLX": "Communication",
+    "ADBE": "Technology", "CSCO": "Technology", "ACN": "Technology",
+    "TXN": "Technology", "INTC": "Technology", "QCOM": "Technology",
+    "INTU": "Technology", "AMAT": "Technology", "BKNG": "Consumer",
+    "ISRG": "Healthcare", "MDLZ": "Consumer", "ADP": "Technology",
+    "REGN": "Healthcare", "VRTX": "Healthcare", "GILD": "Healthcare",
+    "PANW": "Technology", "LRCX": "Technology", "MU": "Technology",
+    "KLAC": "Technology", "SNPS": "Technology",
+}
+
+# KR Major Stocks (50)
+KR_STOCKS = [
+    "005930", "000660", "373220", "005380", "000270",
+    "207940", "006400", "035420", "035720", "005490",
+    "068270", "028260", "105560", "055550", "012330",
+    "066570", "003670", "051910", "096770", "034730",
+    "000810", "003550", "032830", "009150", "086790",
+    "010130", "033780", "011200", "247540", "377300",
+    # 20 additional
+    "030200", "017670", "018260", "036570", "316140",
+    "003490", "034020", "011170", "024110", "010950",
+    "006800", "004020", "000720", "002790", "138040",
+    "259960", "326030", "323410", "361610", "352820",
+]
+
+KR_STOCK_NAMES = {
+    "005930": "Samsung Electronics", "000660": "SK Hynix",
+    "373220": "LG Energy Solution", "005380": "Hyundai Motor",
+    "000270": "Kia", "207940": "Samsung Biologics",
+    "006400": "Samsung SDI", "035420": "NAVER",
+    "035720": "Kakao", "005490": "POSCO Holdings",
+    "068270": "Celltrion", "028260": "Samsung C&T",
+    "105560": "KB Financial", "055550": "Shinhan Financial",
+    "012330": "Hyundai Mobis", "066570": "LG Electronics",
+    "003670": "POSCO Future M", "051910": "LG Chem",
+    "096770": "SK Innovation", "034730": "SK",
+    "000810": "Samsung Fire", "003550": "LG",
+    "032830": "Samsung Life", "009150": "Samsung Electro",
+    "086790": "Hana Financial", "010130": "Korea Zinc",
+    "033780": "KT&G", "011200": "HMM",
+    "247540": "Ecopro BM", "377300": "Kakao Pay",
+    "030200": "KT", "017670": "SK Telecom",
+    "018260": "Samsung SDS", "036570": "NCsoft",
+    "316140": "Woori Financial", "003490": "Korea Shipbuilding",
+    "034020": "Doosan Enerbility", "011170": "Lotte Chemical",
+    "024110": "Industrial Bank of Korea", "010950": "S-Oil",
+    "006800": "Mirae Asset Securities", "004020": "Hyundai Steel",
+    "000720": "Hyundai E&C", "002790": "Amore Pacific",
+    "138040": "Meritz Financial", "259960": "Krafton",
+    "326030": "SK Biopharm", "323410": "Kakao Bank",
+    "361610": "SK IE Technology", "352820": "Hive",
+}
+
+KR_STOCK_SECTORS = {
+    "005930": "Semiconductor", "000660": "Semiconductor",
+    "373220": "Battery", "005380": "Auto",
+    "000270": "Auto", "207940": "Bio",
+    "006400": "Battery", "035420": "Internet",
+    "035720": "Internet", "005490": "Steel",
+    "068270": "Bio", "028260": "Holding",
+    "105560": "Financial", "055550": "Financial",
+    "012330": "Auto Parts", "066570": "Electronics",
+    "003670": "Materials", "051910": "Chemical",
+    "096770": "Energy", "034730": "Holding",
+    "000810": "Insurance", "003550": "Holding",
+    "032830": "Insurance", "009150": "Components",
+    "086790": "Financial", "010130": "Non-Ferrous",
+    "033780": "Tobacco", "011200": "Shipping",
+    "247540": "Battery", "377300": "Fintech",
+    "030200": "Telecom", "017670": "Telecom",
+    "018260": "IT Services", "036570": "Gaming",
+    "316140": "Financial", "003490": "Shipbuilding",
+    "034020": "Industrial", "011170": "Chemical",
+    "024110": "Financial", "010950": "Energy",
+    "006800": "Securities", "004020": "Steel",
+    "000720": "Construction", "002790": "Cosmetics",
+    "138040": "Financial", "259960": "Gaming",
+    "326030": "Bio", "323410": "Fintech",
+    "361610": "Battery", "352820": "Entertainment",
+}
+
+# Economic Indicators (yfinance symbols)
+INDICATORS = {
+    "CL=F": ("WTI Oil", "$"),
+    "GC=F": ("Gold", "$"),
+    "SI=F": ("Silver", "$"),
+    "HG=F": ("Copper", "$"),
+    "EURUSD=X": ("EUR/USD", ""),
+    "KRW=X": ("USD/KRW", "W"),
+    "JPY=X": ("USD/JPY", ""),
+    "CNY=X": ("USD/CNY", ""),
+    "^TNX": ("US 10Y", "%"),
+    "BTC-USD": ("Bitcoin", "$"),
+    "ETH-USD": ("Ethereum", "$"),
+}
+
+# Sector → Related Economic Indicators mapping
+# Maps stock sectors to relevant indicator symbols from INDICATORS
+SECTOR_INDICATOR_MAP = {
+    "Technology": ["^IXIC", "BTC-USD"],
+    "Semiconductor": ["^IXIC", "BTC-USD"],
+    "Internet": ["^IXIC", "BTC-USD"],
+    "IT Services": ["^IXIC", "BTC-USD"],
+    "Communication": ["^IXIC", "BTC-USD"],
+    "Gaming": ["^IXIC", "BTC-USD"],
+    "Energy": ["CL=F", "HG=F"],
+    "Chemical": ["CL=F", "HG=F"],
+    "Materials": ["CL=F", "HG=F"],
+    "Financial": ["^TNX", "EURUSD=X"],
+    "Insurance": ["^TNX", "EURUSD=X"],
+    "Securities": ["^TNX", "EURUSD=X"],
+    "Fintech": ["^TNX", "BTC-USD"],
+    "Consumer": ["GC=F", "EURUSD=X"],
+    "Cosmetics": ["GC=F", "JPY=X"],
+    "Entertainment": ["GC=F", "EURUSD=X"],
+    "Auto": ["KRW=X", "CL=F"],
+    "Auto Parts": ["KRW=X", "CL=F"],
+    "Healthcare": ["GC=F", "^TNX"],
+    "Bio": ["GC=F", "^TNX"],
+    "Battery": ["HG=F", "SI=F"],
+    "Steel": ["HG=F", "CNY=X"],
+    "Non-Ferrous": ["HG=F", "GC=F"],
+    "Shipbuilding": ["CL=F", "KRW=X"],
+    "Shipping": ["CL=F", "KRW=X"],
+    "Construction": ["HG=F", "^TNX"],
+    "Industrial": ["CL=F", "HG=F"],
+    "Telecom": ["^TNX", "KRW=X"],
+    "Tobacco": ["GC=F", "KRW=X"],
+    "Holding": ["^TNX", "KRW=X"],
+    "Electronics": ["^IXIC", "KRW=X"],
+    "Components": ["^IXIC", "KRW=X"],
+}
+
+# News RSS Feeds
+NEWS_FEEDS = {
+    "yahoo": "https://finance.yahoo.com/news/rssindex",
+    "yahoo_markets": "https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC&region=US&lang=en-US",
+    "hankyung": "https://www.hankyung.com/feed/economy",
+    "mk": "https://www.mk.co.kr/rss/30100041/",
+}
